@@ -6,18 +6,15 @@ set(CMAKE_CXX_STANDARD 17)
 find_package(Vulkan REQUIRED)
 add_subdirectory(external)
 
-set (source_files 
-	src/rvpt/main.cpp 
-	src/rvpt/rvpt.cpp 
+set (library_source_files
+	src/rvpt/rvpt.cpp
 	src/rvpt/window.cpp 
 	src/rvpt/vk_util.cpp 
 	src/rvpt/imgui_impl.cpp
-##	assets/shaders/fullscreen_tri.vert 
-##	assets/shaders/tex_sample.frag 
 	src/rvpt/camera.cpp 
 	src/rvpt/timer.cpp)
 
-set (header_files
+set (library_header_files
 	src/rvpt/rvpt.h
 	src/rvpt/window.h
 	src/rvpt/vk_util.h
@@ -26,9 +23,11 @@ set (header_files
 	src/rvpt/timer.h
 	src/rvpt/geometry.h)
 
-add_executable(rvpt ${source_files} ${header_files})
-##    src/rvpt/main.cpp src/rvpt/rvpt.cpp src/rvpt/window.cpp src/rvpt/vk_util.cpp src/rvpt/imgui_impl.cpp
-##    assets/shaders/fullscreen_tri.vert assets/shaders/tex_sample.frag src/rvpt/camera.cpp src/rvpt/timer.cpp)
+add_library(rvpt ${library_source_files} ${library_header_files})
+
+# Create the implementation executable that uses the library ( Should be self explainatory? )
+add_executable(impl src/rvpt/main.cpp)
+target_link_libraries(impl rvpt)
 
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT rvpt)
 
@@ -89,3 +88,5 @@ configure_file (
     "${PROJECT_SOURCE_DIR}/scripts/project_configuration.json.in"
     "${PROJECT_BINARY_DIR}/project_configuration.json"
 )
+
+
