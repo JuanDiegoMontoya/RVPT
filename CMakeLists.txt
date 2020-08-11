@@ -23,7 +23,7 @@ set (library_header_files
 	src/rvpt/timer.h
 	src/rvpt/geometry.h)
 
-add_library(rvpt ${library_source_files} ${library_header_files})
+add_library(rvpt STATIC ${library_source_files} ${library_header_files})
 
 # Create the implementation executable that uses the library ( Should be self explainatory? )
 add_executable(impl src/rvpt/main.cpp)
