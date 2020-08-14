@@ -172,8 +172,6 @@ public:
     explicit Window(Settings settings);
     ~Window();
 
-    void setup_imgui();
-
     float get_aspect_ratio();
     void add_mouse_click_callback(MouseClickCallback callback);
     void add_mouse_move_callback(MouseMoveCallback callback);

@@ -26,7 +26,7 @@ set (library_header_files
 add_library(rvpt STATIC ${library_source_files} ${library_header_files})
 
 # Create the implementation executable that uses the library ( Should be self explainatory? )
-add_executable(impl src/rvpt/main.cpp)
+add_executable(impl src/impl/main.cpp)
 target_link_libraries(impl rvpt)
 
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT rvpt)
