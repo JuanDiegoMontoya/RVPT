@@ -560,6 +560,7 @@ RVPT::RenderingResources RVPT::create_rendering_resources()
         {5, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_COMPUTE_BIT, nullptr},
         {6, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_COMPUTE_BIT, nullptr},
         {7, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_COMPUTE_BIT, nullptr},
+        {8, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1, VK_SHADER_STAGE_COMPUTE_BIT, nullptr},
     };
 
     auto raytrace_descriptor_pool = VK::DescriptorPool(
@@ -632,6 +633,15 @@ RVPT::RenderingResources RVPT::create_rendering_resources()
                                   window_ref.get_settings().height * 4),
         VK::MemoryUsage::gpu);
 
+    auto reprojection_storage_image = VK::Image(
+        vk_device, memory_allocator, *graphics_queue, "reprojection_storage_image",
+        VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_TILING_OPTIMAL, window_ref.get_settings().width,
+        window_ref.get_settings().height, VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_STORAGE_BIT,
+        VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_ASPECT_COLOR_BIT,
+        static_cast<VkDeviceSize>(window_ref.get_settings().width *
+                                  window_ref.get_settings().height * 4),
+        VK::MemoryUsage::gpu);
+
     VkFormat depth_format =
         VK::get_depth_image_format(context.device.physical_device.physical_device);
 
@@ -656,6 +666,7 @@ RVPT::RenderingResources RVPT::create_rendering_resources()
                                     opaque,
                                     wireframe,
                                     std::move(temporal_storage_image),
+                                    std::move(reprojection_storage_image),
                                     std::move(depth_image)};
 }
 
@@ -707,6 +718,8 @@ void RVPT::add_per_frame_data(int index)
         "output_image_descriptor_set_" + std::to_string(index));
     auto temporal_image_descriptor_set = rendering_resources->image_pool.allocate(
         "temporal_image_descriptor_set_" + std::to_string(index));
+    auto reprojection_image_descriptor_set = rendering_resources->image_pool.allocate(
+        "reprojection_image_descriptor_set_" + std::to_string(index));
     auto raytracing_descriptor_set = rendering_resources->raytrace_descriptor_pool.allocate(
         "raytrace_descriptor_set_" + std::to_string(index));
 
@@ -725,6 +738,8 @@ void RVPT::add_per_frame_data(int index)
     raytracing_descriptors.push_back(std::vector{sphere_buffer.descriptor_info()});
     raytracing_descriptors.push_back(std::vector{triangle_buffer.descriptor_info()});
     raytracing_descriptors.push_back(std::vector{material_buffer.descriptor_info()});
+    raytracing_descriptors.push_back(
+        std::vector{rendering_resources->reprojection_storage_image.descriptor_info()});
 
     rendering_resources->raytrace_descriptor_pool.update_descriptor_sets(raytracing_descriptor_set,
                                                                          raytracing_descriptors);
